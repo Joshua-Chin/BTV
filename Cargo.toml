@@ -1,5 +1,5 @@
 [package]
-name = "BTV"
+name = "btv"
 version = "0.1.0"
 authors = ["Joshua Chin <joshuarchin@gmail.com>"]
 edition = "2018"
