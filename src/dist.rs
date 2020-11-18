@@ -40,6 +40,25 @@ impl Dist {
 
         output
     }
+
+    pub fn add_exploding_style(&self) -> Dist {
+        // Compute the exploding roll
+        let mut explosion = Dist::new();
+        for i in 1..71 {
+            explosion.ccdf[i] = if i >= 18 { self.ccdf[i - 18] } else { 1.0 };
+        }
+        explosion = explosion.add_die(2, false).add_die(20, false);
+
+        // Compute the base roll
+        let mut output = self.add_die(18, false);
+
+        // Merge the base and exploding rolls
+        for i in 1..71 {
+            output.ccdf[i] = 0.9 * output.ccdf[i] + 0.1 * explosion.ccdf[i];
+        }
+
+        output
+    }
 }
 
 #[cfg(test)]
@@ -69,5 +88,14 @@ mod tests {
         assert_eq!(dist.at_least(3), 0.875);
         assert_eq!(dist.at_least(8), 0.25);
         assert_eq!(dist.at_least(9), 0.0);
+    }
+
+    #[test]
+    fn test_add_exploding_style() {
+        let dist = Dist::new().add_exploding_style();
+        assert_eq!(dist.at_least(1), 1.0);
+        assert_eq!(dist.at_least(19), 0.10);
+        assert!((dist.at_least(40) - 0.0025).abs() < 1e6);
+        assert_eq!(dist.at_least(41), 0.0);
     }
 }
