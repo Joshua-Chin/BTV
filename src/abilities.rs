@@ -1,6 +1,6 @@
 use std::ops::{Index, IndexMut};
 
-enum Ability {
+pub enum Ability {
     Atmosphere,
     Diction,
     Precision,

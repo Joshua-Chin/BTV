@@ -1,5 +1,5 @@
 bitflags! {
-    struct Rewards: u32 {
+    pub struct Rewards: u32 {
         const ADDITIONAL_ABILITY = 1 << 0;
         const ATMOSPHERE_RANGE = 1 << 1;
         const DICTION_STRENGTH = 1 << 2;

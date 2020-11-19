@@ -1,3 +1,6 @@
+use crate::abilities::Ability;
+use crate::rewards::Rewards;
+
 const LIMIT: usize = 71;
 
 // A distribution representing the sum of multiple rolls.
@@ -16,6 +19,29 @@ impl Distribution {
 
     pub fn at_least(&self, target: usize) -> f32 {
         self.ccdf[target]
+    }
+
+    pub fn add_ability(&self, ability: Ability, rewards: Rewards) -> Distribution {
+        match ability {
+            Ability::Atmosphere => self.add_die(
+                ability.cost() + (rewards.contains(Rewards::ATMOSPHERE_RANGE) as u32), 
+                false),
+            Ability::Diction => self.add_die(
+                ability.cost() + (rewards.contains(Rewards::DICTION_RANGE) as u32), 
+                rewards.contains(Rewards::DICTION_STRENGTH)),
+            Ability::Precision => self.add_die(
+                ability.cost() + (rewards.contains(Rewards::PRECISION_RANGE) as u32), 
+                rewards.contains(Rewards::PRECISION_STRENGTH)),
+            Ability::Calmness => self.add_die(
+                ability.cost(),
+                rewards.contains(Rewards::CALMNESS_STRENGTH)),
+            Ability::Style => if rewards.contains(Rewards::STYLE_EXPLODING) {
+                    self.add_exploding_style()
+                } else {
+                    self.add_die(ability.cost(), false)
+                },
+            _ => self.add_die(ability.cost(), false),
+        }
     }
 
     fn add_die(&self, range: u32, strength: bool) -> Distribution {
