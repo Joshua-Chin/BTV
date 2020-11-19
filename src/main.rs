@@ -2,8 +2,8 @@
 extern crate bitflags;
 
 mod abilities;
-mod challenge;
-mod distribution;
+mod challenges;
+mod distributions;
 mod rewards;
 
 fn main() {
