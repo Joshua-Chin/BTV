@@ -2,24 +2,24 @@ const LIMIT: usize = 71;
 
 // A distribution representing the sum of multiple rolls.
 #[derive(Clone, Debug)]
-pub struct Dist {
+pub struct Distribution {
     // The complementary cumulative distribution
     ccdf: [f32; LIMIT],
 }
 
-impl Dist {
-    pub fn new() -> Dist {
+impl Distribution {
+    pub fn new() -> Distribution {
         let mut ccdf = [0.0; LIMIT];
         ccdf[0] = 1.0;
-        Dist { ccdf }
+        Distribution { ccdf }
     }
 
     pub fn at_least(&self, target: usize) -> f32 {
         self.ccdf[target]
     }
 
-    pub fn add_die(&self, range: u32, strength: bool) -> Dist {
-        let mut output = Dist::new();
+    fn add_die(&self, range: u32, strength: bool) -> Distribution {
+        let mut output = Distribution::new();
         let mut window = range as f32;
         let range_us = range as usize;
         
@@ -41,9 +41,9 @@ impl Dist {
         output
     }
 
-    pub fn add_exploding_style(&self) -> Dist {
+    fn add_exploding_style(&self) -> Distribution {
         // Compute the exploding roll
-        let mut explosion = Dist::new();
+        let mut explosion = Distribution::new();
         for i in 1..71 {
             explosion.ccdf[i] = if i >= 18 { self.ccdf[i - 18] } else { 1.0 };
         }
@@ -67,14 +67,14 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let dist = Dist::new();
+        let dist = Distribution::new();
         assert_eq!(dist.at_least(0), 1.0);
         assert_eq!(dist.at_least(1), 0.0);
     }
 
     #[test]
     fn test_add_die() {
-        let dist = Dist::new().add_die(8, false);
+        let dist = Distribution::new().add_die(8, false);
         assert_eq!(dist.at_least(1), 1.0);
         assert_eq!(dist.at_least(2), 0.875);
         assert_eq!(dist.at_least(8), 0.125);
@@ -83,7 +83,7 @@ mod tests {
 
     #[test]
     fn test_add_strength_die() {
-        let dist = Dist::new().add_die(8, true);
+        let dist = Distribution::new().add_die(8, true);
         assert_eq!(dist.at_least(2), 1.0);
         assert_eq!(dist.at_least(3), 0.875);
         assert_eq!(dist.at_least(8), 0.25);
@@ -92,7 +92,7 @@ mod tests {
 
     #[test]
     fn test_add_exploding_style() {
-        let dist = Dist::new().add_exploding_style();
+        let dist = Distribution::new().add_exploding_style();
         assert_eq!(dist.at_least(1), 1.0);
         assert_eq!(dist.at_least(19), 0.10);
         assert!((dist.at_least(40) - 0.0025).abs() < 1e6);
