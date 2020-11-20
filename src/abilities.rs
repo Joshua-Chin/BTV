@@ -1,5 +1,6 @@
 use std::ops::{Index, IndexMut};
 
+#[derive(Copy, Clone)]
 pub enum Ability {
     Atmosphere,
     Diction,
@@ -39,6 +40,7 @@ impl Ability {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct AbilitySet {
     abilities: [u8; 8],
 }
