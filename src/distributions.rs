@@ -70,7 +70,7 @@ impl Distribution {
     fn add_exploding_style(&self) -> Distribution {
         // Compute the exploding roll
         let mut explosion = Distribution::new();
-        for i in 1..71 {
+        for i in 1..LIMIT {
             explosion.ccdf[i] = if i >= 18 { self.ccdf[i - 18] } else { 1.0 };
         }
         explosion = explosion.add_die(2, false).add_die(20, false);
@@ -79,7 +79,7 @@ impl Distribution {
         let mut output = self.add_die(18, false);
 
         // Merge the base and exploding rolls
-        for i in 1..71 {
+        for i in 1..LIMIT {
             output.ccdf[i] = 0.9 * output.ccdf[i] + 0.1 * explosion.ccdf[i];
         }
 
