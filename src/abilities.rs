@@ -40,7 +40,7 @@ impl Ability {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct AbilitySet {
     abilities: [u8; 8],
 }
