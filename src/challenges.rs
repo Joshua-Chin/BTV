@@ -156,3 +156,25 @@ fn convex_hull(curve: &[(f32, AbilitySet); COSTS]) -> ConvexHull {
 
     hull
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_convex_hull_no_rewards() {
+        let mut solver = Solver::new(vec![(5, 4)]);
+        let solution = solver.convex_hull(Rewards::NONE, 0);
+        assert_eq!(solution.len(), 26);
+        assert_eq!(solution[0].0, 36);
+        assert!((solution[0].1 + 4.0943) < 1e-5);
+    }
+
+    #[test]
+    fn test_convex_hull_exploding_style() {
+        let mut solver = Solver::new(vec![(5, 4)]);
+        let solution = solver.convex_hull(Rewards::STYLE_EXPLODING, 0);
+        assert_eq!(solution[0].0, 20);
+        assert!((solution[0].1 + -3.5935) < 1e-5);
+    }
+}
