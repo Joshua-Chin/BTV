@@ -1,18 +1,18 @@
 use crate::abilities::Ability;
 use crate::rewards::Rewards;
 
-const LIMIT: usize = 71;
+const TARGETS: usize = 71;
 
 // A distribution representing the sum of multiple rolls.
 #[derive(Clone, Debug)]
 pub struct Distribution {
     // The complementary cumulative distribution
-    ccdf: [f32; LIMIT],
+    ccdf: [f32; TARGETS],
 }
 
 impl Distribution {
     pub fn new() -> Distribution {
-        let mut ccdf = [0.0; LIMIT];
+        let mut ccdf = [0.0; TARGETS];
         ccdf[0] = 1.0;
         Distribution { ccdf }
     }
@@ -50,14 +50,14 @@ impl Distribution {
         let range_us = range as usize;
         
         if strength {
-            for i in 1..LIMIT {
+            for i in 1..TARGETS {
                 output.ccdf[i] = window / (range as f32);
                 window += self.ccdf[i - 1];
                 window += if i + 1 >= range_us { self.ccdf[i + 1 - range_us] } else { 1.0 };
                 window -= 2.0 * if i >= range_us { self.ccdf[i - range_us] } else { 1.0 };
             }
         } else {
-            for i in 1..LIMIT {
+            for i in 1..TARGETS {
                 output.ccdf[i] = window / (range as f32);
                 window += self.ccdf[i];
                 window -= if i >= range_us { self.ccdf[i - range_us] } else { 1.0 };
@@ -70,7 +70,7 @@ impl Distribution {
     fn add_exploding_style(&self) -> Distribution {
         // Compute the exploding roll
         let mut explosion = Distribution::new();
-        for i in 1..LIMIT {
+        for i in 1..TARGETS {
             explosion.ccdf[i] = if i >= 18 { self.ccdf[i - 18] } else { 1.0 };
         }
         explosion = explosion.add_die(2, false).add_die(20, false);
@@ -79,7 +79,7 @@ impl Distribution {
         let mut output = self.add_die(18, false);
 
         // Merge the base and exploding rolls
-        for i in 1..LIMIT {
+        for i in 1..TARGETS {
             output.ccdf[i] = 0.9 * output.ccdf[i] + 0.1 * explosion.ccdf[i];
         }
 
