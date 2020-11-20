@@ -7,5 +7,6 @@ mod distributions;
 mod rewards;
 
 fn main() {
-    println!("Hello, world!");
+    let mut solver = challenges::Solver::new(vec!((5, 4), (2, 3), (1, 6)));
+    println!("{:?}", solver.convex_hull(rewards::Rewards::NONE, 0));
 }
