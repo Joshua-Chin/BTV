@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{cell::Ref, cell::RefCell, ops::Deref};
 
 use crate::{
     abilities::{Ability, AbilitySet},
@@ -11,24 +11,31 @@ const COSTS: usize = MAX_COST / 2 + 1;
 const MAX_ABILITIES: usize = 16;
 const TARGETS: [usize; 9] = [10, 11, 20, 25, 30, 35, 40, 45, 70];
 
-type ConvexHull = Vec<(u32, f32, f32, AbilitySet)>;
+pub type HullPoint = (u32, f32, f32, AbilitySet);
+pub type ConvexHull = Vec<HullPoint>;
 type Solutions = [[[(f32, AbilitySet); TARGETS.len()]; MAX_ABILITIES + 1]; COSTS];
 
 pub struct Solver {
     challenges: Vec<(u32, u32)>,
-    cache: HashMap<Rewards, Vec<ConvexHull>>,
+    cache: Vec<RefCell<Option<Vec<ConvexHull>>>>,
 }
 
 impl Solver {
     pub fn new(challenges: Vec<(u32, u32)>) -> Solver {
-        Solver {
-            challenges,
-            cache: HashMap::new(),
+        let mut cache = vec![];
+        cache.reserve_exact(256);
+        for _ in 0..256 {
+            cache.push(Default::default());
         }
+        Solver { challenges, cache }
     }
 
-    pub fn convex_hull(&mut self, rewards: Rewards, idx: usize) -> &ConvexHull {
-        if !self.cache.contains_key(&rewards) {
+    pub fn convex_hull(
+        &self,
+        rewards: Rewards,
+        idx: usize,
+    ) -> impl Deref<Target = ConvexHull> + '_ {
+        if self.cache[rewards.bits() as usize].borrow().is_none() {
             // Compute the optimal ability set for each target given a fixed cost and abilities
             let mut solutions =
                 [[[(0.0, AbilitySet::new()); TARGETS.len()]; MAX_ABILITIES + 1]; COSTS];
@@ -73,11 +80,12 @@ impl Solver {
                     }
                     cache_value.push(convex_hull(&probabilities));
                 }
-                self.cache.insert(*key, cache_value);
+                *self.cache[rewards.bits() as usize].borrow_mut() = Some(cache_value);
             }
         }
-
-        &self.cache[&rewards][idx]
+        Ref::map(self.cache[rewards.bits() as usize].borrow(), |x| {
+            x.as_ref().unwrap().get(idx).unwrap()
+        })
     }
 }
 
@@ -123,15 +131,15 @@ fn search(
     }
 }
 
-fn convex_hull(curve: &[(f32, AbilitySet); COSTS]) -> ConvexHull {
-    let mut hull: ConvexHull = vec!();
+fn convex_hull<T: AsRef<[(f32, AbilitySet)]>>(curve: T) -> ConvexHull {
+    let mut hull: ConvexHull = vec![];
 
-    for (idx, (proba, abilities)) in curve.iter().enumerate() {
+    for (idx, (proba, abilities)) in curve.as_ref().iter().enumerate() {
         // Ignore values within epsilon of 0
         if *proba <= 1e-6 {
             continue;
         }
-        
+
         let log_proba = proba.ln();
         let cost = 2 * idx;
 
@@ -149,7 +157,7 @@ fn convex_hull(curve: &[(f32, AbilitySet); COSTS]) -> ConvexHull {
 
     while let Some(point) = hull.last() {
         if point.2 > 0.0 {
-            break
+            break;
         }
         hull.pop();
     }
@@ -163,7 +171,7 @@ mod tests {
 
     #[test]
     fn test_convex_hull_no_rewards() {
-        let mut solver = Solver::new(vec![(5, 4)]);
+        let solver = Solver::new(vec![(5, 4)]);
         let solution = solver.convex_hull(Rewards::NONE, 0);
         assert_eq!(solution.len(), 26);
         assert_eq!(solution[0].0, 36);
@@ -172,7 +180,7 @@ mod tests {
 
     #[test]
     fn test_convex_hull_exploding_style() {
-        let mut solver = Solver::new(vec![(5, 4)]);
+        let solver = Solver::new(vec![(5, 4)]);
         let solution = solver.convex_hull(Rewards::STYLE_EXPLODING, 0);
         assert_eq!(solution[0].0, 20);
         assert!((solution[0].1 + -3.5935) < 1e-5);
