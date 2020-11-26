@@ -11,3 +11,9 @@ bitflags! {
         const STYLE_EXPLODING = 1 << 7;
     }
 }
+
+impl Rewards {
+    pub fn combinations() -> impl Iterator<Item = Rewards> {
+        (0..256).map(Rewards::from_bits_truncate)
+    }
+}

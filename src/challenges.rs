@@ -1,4 +1,4 @@
-use std::{cell::Ref, cell::RefCell, ops::Deref};
+use std::collections::HashMap;
 
 use crate::{
     abilities::{Ability, AbilitySet},
@@ -16,76 +16,75 @@ pub type ConvexHull = Vec<HullPoint>;
 type Solutions = [[[(f32, AbilitySet); TARGETS.len()]; MAX_ABILITIES + 1]; COSTS];
 
 pub struct Solver {
-    challenges: Vec<(u32, u32)>,
-    cache: Vec<RefCell<Option<Vec<ConvexHull>>>>,
+    cache: HashMap<Rewards, Vec<ConvexHull>>,
 }
 
 impl Solver {
     pub fn new(challenges: Vec<(u32, u32)>) -> Solver {
-        let mut cache = vec![];
-        cache.reserve_exact(256);
-        for _ in 0..256 {
-            cache.push(Default::default());
+        let mut cache = HashMap::new();
+        for rewards in Rewards::combinations() {
+            convex_hulls(rewards, &challenges, &mut cache);
         }
-        Solver { challenges, cache }
+        Solver { cache }
     }
 
-    pub fn convex_hull(
-        &self,
-        rewards: Rewards,
-        idx: usize,
-    ) -> impl Deref<Target = ConvexHull> + '_ {
-        if self.cache[rewards.bits() as usize].borrow().is_none() {
-            // Compute the optimal ability set for each target given a fixed cost and abilities
-            let mut solutions =
-                [[[(0.0, AbilitySet::new()); TARGETS.len()]; MAX_ABILITIES + 1]; COSTS];
-            search(
-                rewards & !Rewards::ADDITIONAL_ABILITY,
-                0,
-                0,
-                0,
-                AbilitySet::new(),
-                &Distribution::new(),
-                &mut solutions,
-            );
+    pub fn convex_hull(&self, rewards: Rewards, idx: usize) -> &ConvexHull {
+        &self.cache[&rewards][idx]
+    }
+}
 
-            // Sweep over abilities used
-            for cost in 0..COSTS {
-                for target in 0..TARGETS.len() {
-                    let mut best = solutions[cost][0][target];
-                    for abilities in 1..MAX_ABILITIES + 1 {
-                        let value = &mut solutions[cost][abilities][target];
-                        if best.0 > value.0 {
-                            *value = best;
-                        } else {
-                            best = *value;
-                        }
-                    }
+fn convex_hulls(
+    rewards: Rewards,
+    challenges: &Vec<(u32, u32)>,
+    output: &mut HashMap<Rewards, Vec<ConvexHull>>,
+) {
+    if output.contains_key(&rewards) {
+        return;
+    }
+
+    // Compute the optimal ability set for each target given a fixed cost and abilities
+    let mut solutions = [[[(0.0, AbilitySet::new()); TARGETS.len()]; MAX_ABILITIES + 1]; COSTS];
+    search(
+        rewards & !Rewards::ADDITIONAL_ABILITY,
+        0,
+        0,
+        0,
+        AbilitySet::new(),
+        &Distribution::new(),
+        &mut solutions,
+    );
+
+    // Sweep over abilities used
+    for cost in 0..COSTS {
+        for target in 0..TARGETS.len() {
+            let mut best = solutions[cost][0][target];
+            for abilities in 1..MAX_ABILITIES + 1 {
+                let value = &mut solutions[cost][abilities][target];
+                if best.0 > value.0 {
+                    *value = best;
+                } else {
+                    best = *value;
                 }
-            }
-
-            // Compute convex hulls
-            for key in [rewards, rewards ^ Rewards::ADDITIONAL_ABILITY].iter() {
-                let mut cache_value = vec![];
-                cache_value.reserve_exact(self.challenges.len());
-
-                let mut probabilities = [(0.0, AbilitySet::new()); COSTS];
-
-                for challenge in self.challenges.iter() {
-                    for cost in 0..probabilities.len() {
-                        let target = challenge.0 as usize;
-                        let abilities = challenge.1 as usize
-                            + (key.contains(Rewards::ADDITIONAL_ABILITY) as usize);
-                        probabilities[cost] = solutions[cost][abilities - 1][target];
-                    }
-                    cache_value.push(convex_hull(&probabilities));
-                }
-                *self.cache[rewards.bits() as usize].borrow_mut() = Some(cache_value);
             }
         }
-        Ref::map(self.cache[rewards.bits() as usize].borrow(), |x| {
-            x.as_ref().unwrap().get(idx).unwrap()
-        })
+    }
+
+    // Compute convex hulls
+    for key in [rewards, rewards ^ Rewards::ADDITIONAL_ABILITY].iter() {
+        let mut cache_value = Vec::with_capacity(challenges.len());
+        let mut probabilities = [(0.0, AbilitySet::new()); COSTS];
+
+        for challenge in challenges.iter() {
+            for cost in 0..probabilities.len() {
+                let target = challenge.0 as usize;
+                let abilities =
+                    challenge.1 as usize + (key.contains(Rewards::ADDITIONAL_ABILITY) as usize);
+                probabilities[cost] = solutions[cost][abilities][target];
+            }
+            cache_value.push(convex_hull(&probabilities));
+        }
+
+        output.insert(*key, cache_value);
     }
 }
 
@@ -169,10 +168,15 @@ fn convex_hull<T: AsRef<[(f32, AbilitySet)]>>(curve: T) -> ConvexHull {
 mod tests {
     use super::*;
 
+    fn convex_hull(challenges: &Vec<(u32, u32)>, rewards: Rewards, idx: usize) -> ConvexHull {
+        let mut output = HashMap::new();
+        convex_hulls(rewards, challenges, &mut output);
+        output.remove(&rewards).unwrap().swap_remove(idx)
+    }
+
     #[test]
     fn test_convex_hull_no_rewards() {
-        let solver = Solver::new(vec![(5, 4)]);
-        let solution = solver.convex_hull(Rewards::NONE, 0);
+        let solution = convex_hull(&vec![(5, 4)], Rewards::NONE, 0);
         assert_eq!(solution.len(), 26);
         assert_eq!(solution[0].0, 36);
         assert!((solution[0].1 + 4.0943) < 1e-5);
@@ -180,8 +184,7 @@ mod tests {
 
     #[test]
     fn test_convex_hull_exploding_style() {
-        let solver = Solver::new(vec![(5, 4)]);
-        let solution = solver.convex_hull(Rewards::STYLE_EXPLODING, 0);
+        let solution = convex_hull(&vec![(5, 4)], Rewards::STYLE_EXPLODING, 0);
         assert_eq!(solution[0].0, 20);
         assert!((solution[0].1 + -3.5935) < 1e-5);
     }
