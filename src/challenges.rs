@@ -76,7 +76,7 @@ impl Solver {
                         let target = challenge.0 as usize;
                         let abilities = challenge.1 as usize
                             + (key.contains(Rewards::ADDITIONAL_ABILITY) as usize);
-                        probabilities[cost] = solutions[cost][abilities][target];
+                        probabilities[cost] = solutions[cost][abilities - 1][target];
                     }
                     cache_value.push(convex_hull(&probabilities));
                 }

@@ -3,7 +3,7 @@ use std::collections::BinaryHeap;
 use crate::non_nan::NonNan;
 use crate::{abilities::AbilitySet, challenges::HullPoint};
 
-const CHALLENGES: usize = 3;
+const CHALLENGES: usize = 11;
 
 pub fn merge_hulls<T: AsRef<[HullPoint]> + Sized>(
     hulls: &[T; CHALLENGES],
