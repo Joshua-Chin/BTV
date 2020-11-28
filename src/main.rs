@@ -6,7 +6,7 @@ extern crate bitflags;
 mod abilities;
 mod challenges;
 mod distributions;
-mod non_nan;
+mod ord_sub;
 mod parser;
 mod rewards;
 mod solver;
@@ -29,5 +29,5 @@ fn main() {
         h1.deref(),
         h2.deref(),
     ];
-    println!("{:?}", solver::merge_hulls(&hulls).len());
+    println!("{:?}", solver::merge_hulls(&hulls));
 }

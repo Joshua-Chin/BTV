@@ -1,6 +1,6 @@
 use std::collections::BinaryHeap;
 
-use crate::non_nan::NonNan;
+use crate::ord_sub::OrdSub;
 use crate::{abilities::AbilitySet, challenges::HullPoint};
 
 const CHALLENGES: usize = 11;
@@ -31,7 +31,7 @@ pub fn merge_hulls<T: AsRef<[HullPoint]> + Sized>(
         }
         match hull.as_ref().get(1) {
             Some((_, _, slope, _abilities)) => {
-                heap.push((NonNan::new(*slope).unwrap(), idx, 1));
+                heap.push((OrdSub::new(*slope).unwrap(), idx, 1));
             }
             None => {}
         }
@@ -46,7 +46,7 @@ pub fn merge_hulls<T: AsRef<[HullPoint]> + Sized>(
         total_log_probability += h[idx].1 - h[idx - 1].1;
         configuration[hull] = hulls[hull].as_ref()[idx].3;
         if let Some((_, _, slope, _abilities)) = h.get(idx + 1) {
-            heap.push((NonNan::new(*slope).unwrap(), hull, idx + 1));
+            heap.push((OrdSub::new(*slope).unwrap(), hull, idx + 1));
         }
         output.push((total_cost, total_log_probability, configuration));
     }
