@@ -2,10 +2,10 @@ use crate::rewards::Rewards;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Challenge {
-    name: String,
-    target: u32,
-    abilities: u32,
-    reward: Rewards,
+    pub name: String,
+    pub target: u32,
+    pub abilities: u32,
+    pub reward: Rewards,
 }
 
 pub fn parse<T: AsRef<str>>(text: T) -> Option<Vec<Challenge>> {

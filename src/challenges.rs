@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use crate::{
     abilities::{Ability, AbilitySet},
     distributions::Distribution,
+    parser::Challenge,
     rewards::Rewards,
 };
 
@@ -20,10 +21,10 @@ pub struct Solver {
 }
 
 impl Solver {
-    pub fn new(challenges: Vec<(u32, u32)>) -> Solver {
+    pub fn new(challenges: &Vec<Challenge>) -> Solver {
         let mut cache = HashMap::new();
         for rewards in Rewards::combinations() {
-            convex_hulls(rewards, &challenges, &mut cache);
+            convex_hulls(rewards, challenges, &mut cache);
         }
         Solver { cache }
     }
@@ -35,7 +36,7 @@ impl Solver {
 
 fn convex_hulls(
     rewards: Rewards,
-    challenges: &Vec<(u32, u32)>,
+    challenges: &Vec<Challenge>,
     output: &mut HashMap<Rewards, Vec<ConvexHull>>,
 ) {
     if output.contains_key(&rewards) {
@@ -76,9 +77,9 @@ fn convex_hulls(
 
         for challenge in challenges.iter() {
             for cost in 0..probabilities.len() {
-                let target = challenge.0 as usize;
+                let target = challenge.target as usize;
                 let abilities =
-                    challenge.1 as usize + (key.contains(Rewards::ADDITIONAL_ABILITY) as usize);
+                    challenge.abilities as usize + (key.contains(Rewards::ADDITIONAL_ABILITY) as usize);
                 probabilities[cost] = solutions[cost][abilities][target];
             }
             cache_value.push(convex_hull(&probabilities));
@@ -168,7 +169,7 @@ fn convex_hull<T: AsRef<[(f32, AbilitySet)]>>(curve: T) -> ConvexHull {
 mod tests {
     use super::*;
 
-    fn convex_hull(challenges: &Vec<(u32, u32)>, rewards: Rewards, idx: usize) -> ConvexHull {
+    fn convex_hull(challenges: &Vec<Challenge>, rewards: Rewards, idx: usize) -> ConvexHull {
         let mut output = HashMap::new();
         convex_hulls(rewards, challenges, &mut output);
         output.remove(&rewards).unwrap().swap_remove(idx)
@@ -176,7 +177,13 @@ mod tests {
 
     #[test]
     fn test_convex_hull_no_rewards() {
-        let solution = convex_hull(&vec![(5, 4)], Rewards::NONE, 0);
+        let challenges = vec![Challenge {
+            name: "challenge".to_string(),
+            abilities: 4,
+            target: 5,
+            reward: Rewards::NONE,
+        }];
+        let solution = convex_hull(&challenges, Rewards::NONE, 0);
         assert_eq!(solution.len(), 26);
         assert_eq!(solution[0].0, 36);
         assert!((solution[0].1 + 4.0943) < 1e-5);
@@ -184,7 +191,13 @@ mod tests {
 
     #[test]
     fn test_convex_hull_exploding_style() {
-        let solution = convex_hull(&vec![(5, 4)], Rewards::STYLE_EXPLODING, 0);
+        let challenges = vec![Challenge {
+            name: "challenge".to_string(),
+            abilities: 4,
+            target: 5,
+            reward: Rewards::NONE,
+        }];
+        let solution = convex_hull(&challenges, Rewards::STYLE_EXPLODING, 0);
         assert_eq!(solution[0].0, 20);
         assert!((solution[0].1 + -3.5935) < 1e-5);
     }
