@@ -1,12 +1,4 @@
-use crate::rewards::Rewards;
-
-#[derive(Debug, Eq, PartialEq)]
-pub struct Challenge {
-    pub name: String,
-    pub target: u32,
-    pub abilities: u32,
-    pub reward: Rewards,
-}
+use crate::{challenges::Challenge, rewards::Rewards, challenges::TARGETS};
 
 pub fn parse<T: AsRef<str>>(text: T) -> Option<Vec<Challenge>> {
     let mut output = Vec::with_capacity(11);
@@ -17,7 +9,8 @@ pub fn parse<T: AsRef<str>>(text: T) -> Option<Vec<Challenge>> {
         // Parse name
         let name = l1.next()?.trim().to_string();
         // Parse target
-        let target: u32 = l1.next()?.trim().strip_prefix("Target: ")?.parse().ok()?;
+        let target: usize = l1.next()?.trim().strip_prefix("Target: ")?.parse().ok()?;
+        let target_idx = TARGETS.iter().position(|t| *t == target)?;
         // Parse abilities
         let abilities: u32 = l1
             .next()?
@@ -30,7 +23,7 @@ pub fn parse<T: AsRef<str>>(text: T) -> Option<Vec<Challenge>> {
 
         output.push(Challenge {
             name,
-            target,
+            target_idx,
             abilities,
             reward,
         });
@@ -54,7 +47,7 @@ mod tests {
             challenges[0],
             Challenge {
                 name: "Monologue".to_string(),
-                target: 70,
+                target_idx: 8,
                 abilities: 15,
                 reward: Rewards::DICTION_RANGE
             }

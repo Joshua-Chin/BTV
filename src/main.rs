@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-use parser::Challenge;
+use challenges::Challenge;
 use rewards::Rewards;
 
 #[macro_use]
@@ -8,6 +8,7 @@ extern crate bitflags;
 
 mod abilities;
 mod challenges;
+mod convex_hulls;
 mod distributions;
 mod ord_sub;
 mod parser;
@@ -18,10 +19,10 @@ fn main() {
     let challenges = vec![Challenge {
         name: "challenge".to_string(),
         abilities: 4,
-        target: 5,
+        target_idx: 5,
         reward: Rewards::NONE,
     }];
-    let solver = challenges::Solver::new(&challenges);
+    let solver = convex_hulls::Solver::new(&challenges);
     let h1 = solver.convex_hull(rewards::Rewards::NONE, 0);
     let h2 = solver.convex_hull(rewards::Rewards::NONE, 0);
     let h3 = solver.convex_hull(rewards::Rewards::NONE, 0);

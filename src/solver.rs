@@ -1,7 +1,7 @@
 use std::collections::BinaryHeap;
 
 use crate::ord_sub::OrdSub;
-use crate::{abilities::AbilitySet, challenges::HullPoint};
+use crate::{abilities::AbilitySet, convex_hulls::HullPoint};
 
 const CHALLENGES: usize = 11;
 
