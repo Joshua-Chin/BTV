@@ -12,24 +12,37 @@ use crate::{
 const MAX_COST: usize = 300;
 const COSTS: usize = MAX_COST / 2 + 1;
 
-pub type HullPoint = (u32, f32, f32, AbilitySet);
-pub type ConvexHull = Vec<HullPoint>;
-type Solutions = [[[(f32, AbilitySet); TARGETS.len()]; MAX_ABILITIES + 1]; COSTS];
+pub struct HullPoint {
+    pub cost: u32,
+    pub log_proba: f32,
+    pub slope: f32,
+    pub abilities: AbilitySet,
+}
 
-pub struct Solver {
+pub type ConvexHull = Vec<HullPoint>;
+
+#[derive(Copy, Clone, Default)]
+struct Solution {
+    proba: f32,
+    abilities: AbilitySet,
+}
+
+type Solutions = [[[Solution; TARGETS.len()]; MAX_ABILITIES + 1]; COSTS];
+
+pub struct ConvexHulls {
     cache: HashMap<Rewards, Vec<ConvexHull>>,
 }
 
-impl Solver {
-    pub fn new(challenges: &Vec<Challenge>) -> Solver {
+impl ConvexHulls {
+    pub fn new(challenges: &Vec<Challenge>) -> ConvexHulls {
         let mut cache = HashMap::new();
         for rewards in Rewards::combinations() {
             convex_hulls(rewards, challenges, &mut cache);
         }
-        Solver { cache }
+        ConvexHulls { cache }
     }
 
-    pub fn convex_hull(&self, rewards: Rewards, idx: usize) -> &ConvexHull {
+    pub fn get(&self, rewards: Rewards, idx: usize) -> &ConvexHull {
         &self.cache[&rewards][idx]
     }
 }
@@ -44,7 +57,7 @@ fn convex_hulls(
     }
 
     // Compute the optimal ability set for each target given a fixed cost and abilities
-    let mut solutions = [[[(0.0, AbilitySet::new()); TARGETS.len()]; MAX_ABILITIES + 1]; COSTS];
+    let mut solutions = [[[Default::default(); TARGETS.len()]; MAX_ABILITIES + 1]; COSTS];
     search(
         rewards & !Rewards::ADDITIONAL_ABILITY,
         0,
@@ -61,7 +74,7 @@ fn convex_hulls(
             let mut best = solutions[cost][0][target];
             for abilities in 1..MAX_ABILITIES + 1 {
                 let value = &mut solutions[cost][abilities][target];
-                if best.0 > value.0 {
+                if best.proba > value.proba {
                     *value = best;
                 } else {
                     best = *value;
@@ -73,7 +86,7 @@ fn convex_hulls(
     // Compute convex hulls
     for key in [rewards, rewards ^ Rewards::ADDITIONAL_ABILITY].iter() {
         let mut cache_value = Vec::with_capacity(challenges.len());
-        let mut probabilities = [(0.0, AbilitySet::new()); COSTS];
+        let mut probabilities = [Default::default(); COSTS];
 
         for challenge in challenges.iter() {
             for cost in 0..probabilities.len() {
@@ -104,8 +117,11 @@ fn search(
 
     for (idx, target) in TARGETS.iter().enumerate() {
         let entry = &mut solutions[cost / 2][total_abilities][idx];
-        if distribution.at_least(*target) >= entry.0 {
-            *entry = (distribution.at_least(*target), abilities);
+        if distribution.at_least(*target) >= entry.proba {
+            *entry = Solution {
+                proba: distribution.at_least(*target),
+                abilities,
+            };
         }
     }
 
@@ -131,32 +147,32 @@ fn search(
     }
 }
 
-fn convex_hull<T: AsRef<[(f32, AbilitySet)]>>(curve: T) -> ConvexHull {
+fn convex_hull<T: AsRef<[Solution]>>(curve: T) -> ConvexHull {
     let mut hull: ConvexHull = vec![];
 
-    for (idx, (proba, abilities)) in curve.as_ref().iter().enumerate() {
+    for (idx, solution) in curve.as_ref().iter().enumerate() {
         // Ignore values within epsilon of 0
-        if *proba <= 1e-6 {
+        if solution.proba <= 1e-6 {
             continue;
         }
 
-        let log_proba = proba.ln();
         let cost = 2 * idx;
+        let log_proba = solution.proba.ln();
 
         let mut slope = f32::MAX;
         while let Some(prev) = hull.last() {
-            slope = (prev.1 - log_proba) / ((prev.0 as f32) - (cost as f32));
-            if slope < prev.2 {
+            slope = (prev.log_proba - log_proba) / ((prev.cost as f32) - (cost as f32));
+            if slope < prev.slope {
                 break;
             }
             hull.pop();
         }
 
-        hull.push((cost as u32, log_proba, slope, *abilities));
+        hull.push(HullPoint {cost: cost as u32, log_proba, slope, abilities: solution.abilities});
     }
 
     while let Some(point) = hull.last() {
-        if point.2 > 0.0 {
+        if point.slope > 0.0 {
             break;
         }
         hull.pop();
@@ -185,8 +201,8 @@ mod tests {
         }];
         let solution = convex_hull(&challenges, Rewards::NONE, 0);
         assert_eq!(solution.len(), 26);
-        assert_eq!(solution[0].0, 36);
-        assert!((solution[0].1 + 4.0943) < 1e-5);
+        assert_eq!(solution[0].cost, 36);
+        assert!((solution[0].log_proba + 4.0943) < 1e-5);
     }
 
     #[test]
@@ -198,7 +214,7 @@ mod tests {
             reward: Rewards::NONE,
         }];
         let solution = convex_hull(&challenges, Rewards::STYLE_EXPLODING, 0);
-        assert_eq!(solution[0].0, 20);
-        assert!((solution[0].1 + -3.5935) < 1e-5);
+        assert_eq!(solution[0].cost, 20);
+        assert!((solution[0].log_proba + -3.5935) < 1e-5);
     }
 }

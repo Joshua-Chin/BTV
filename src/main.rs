@@ -22,10 +22,10 @@ fn main() {
         target_idx: 5,
         reward: Rewards::NONE,
     }];
-    let solver = convex_hulls::Solver::new(&challenges);
-    let h1 = solver.convex_hull(rewards::Rewards::NONE, 0);
-    let h2 = solver.convex_hull(rewards::Rewards::NONE, 0);
-    let h3 = solver.convex_hull(rewards::Rewards::NONE, 0);
+    let solver = convex_hulls::ConvexHulls::new(&challenges);
+    let h1 = solver.get(rewards::Rewards::NONE, 0);
+    let h2 = solver.get(rewards::Rewards::NONE, 0);
+    let h3 = solver.get(rewards::Rewards::NONE, 0);
     let hulls = [
         h1.deref(),
         h2.deref(),
