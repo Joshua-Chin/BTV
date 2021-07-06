@@ -1,5 +1,6 @@
 use crate::{challenges::Challenge, rewards::Rewards, challenges::TARGETS};
 
+/// Parses a string containing multiple challenges.
 pub fn parse<T: AsRef<str>>(text: T) -> Option<Vec<Challenge>> {
     let mut output = Vec::with_capacity(11);
 
@@ -38,7 +39,7 @@ mod tests {
 
     #[test]
     fn test_parse() {
-        let input = include_str!("data.txt");
+        let input = include_str!("test_input.txt");
         let result = parse(input);
         assert!(result.is_some());
         let challenges = result.unwrap();
