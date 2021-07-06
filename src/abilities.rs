@@ -1,6 +1,7 @@
 use std::ops::{Index, IndexMut};
 
-#[derive(Copy, Clone)]
+/// Enumeration of available abilities.
+#[derive(Debug, Copy, Clone)]
 pub enum Ability {
     Atmosphere,
     Diction,
@@ -13,6 +14,7 @@ pub enum Ability {
 }
 
 impl Ability {
+    /// Returns an array of possible abilities.
     pub const fn values() -> [Ability; 8] {
         [
             Ability::Atmosphere,
@@ -26,6 +28,7 @@ impl Ability {
         ]
     }
 
+    /// Returns the cost of the ability.
     pub const fn cost(&self) -> u32 {
         match self {
             Ability::Atmosphere => 4,
@@ -40,14 +43,15 @@ impl Ability {
     }
 }
 
+/// Efficient ability counter.
 #[derive(Copy, Clone, Debug, Default)]
-pub struct AbilitySet {
+pub struct Abilities {
     abilities: [u8; 8],
 }
 
-impl AbilitySet {
-    pub const fn new() -> AbilitySet {
-        AbilitySet { abilities: [0; 8] }
+impl Abilities {
+    pub const fn new() -> Abilities {
+        Abilities { abilities: [0; 8] }
     }
 
     const fn index_of(ability: Ability) -> usize {
@@ -64,7 +68,7 @@ impl AbilitySet {
     }    
 }
 
-impl Index<Ability> for AbilitySet {
+impl Index<Ability> for Abilities {
     type Output = u8;
 
     fn index(&self, index: Ability) -> &Self::Output {
@@ -72,7 +76,7 @@ impl Index<Ability> for AbilitySet {
     }
 }
 
-impl IndexMut<Ability> for AbilitySet {
+impl IndexMut<Ability> for Abilities {
     fn index_mut(&mut self, index: Ability) -> &mut Self::Output {
         &mut self.abilities[Self::index_of(index)]
     }
@@ -84,7 +88,7 @@ mod tests {
 
     #[test]
     fn test_ability_set() {
-        let mut ability_set = AbilitySet::new();
+        let mut ability_set = Abilities::new();
         assert_eq!(ability_set[Ability::Diction], 0);
         ability_set[Ability::Diction] = 4;
         assert_eq!(ability_set[Ability::Diction], 4);

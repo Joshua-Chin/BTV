@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    abilities::{Ability, AbilitySet},
+    abilities::{Ability, Abilities},
     challenges::Challenge,
     challenges::MAX_ABILITIES,
     challenges::TARGETS,
@@ -12,11 +12,12 @@ use crate::{
 const MAX_COST: usize = 300;
 const COSTS: usize = MAX_COST / 2 + 1;
 
+#[derive(Debug)]
 pub struct HullPoint {
     pub cost: u32,
     pub log_proba: f32,
     pub slope: f32,
-    pub abilities: AbilitySet,
+    pub abilities: Abilities,
 }
 
 pub type ConvexHull = Vec<HullPoint>;
@@ -24,7 +25,7 @@ pub type ConvexHull = Vec<HullPoint>;
 #[derive(Copy, Clone, Default)]
 struct Solution {
     proba: f32,
-    abilities: AbilitySet,
+    abilities: Abilities,
 }
 
 type Solutions = [[[Solution; TARGETS.len()]; MAX_ABILITIES + 1]; COSTS];
@@ -63,7 +64,7 @@ fn convex_hulls(
         0,
         0,
         0,
-        AbilitySet::new(),
+        Abilities::new(),
         &Distribution::new(),
         &mut solutions,
     );
@@ -107,7 +108,7 @@ fn search(
     idx: usize,
     cost: usize,
     total_abilities: usize,
-    mut abilities: AbilitySet,
+    mut abilities: Abilities,
     distribution: &Distribution,
     solutions: &mut Solutions,
 ) {
