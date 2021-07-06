@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
 
+/// Ordered 
 #[derive(PartialEq, PartialOrd)]
 pub struct OrdSub<T: PartialOrd>(T);
 
