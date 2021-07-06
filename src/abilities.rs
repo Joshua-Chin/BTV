@@ -65,7 +65,7 @@ impl Abilities {
             Ability::Rhythm => 6,
             Ability::Timing => 7,
         }
-    }    
+    }
 }
 
 impl Index<Ability> for Abilities {
