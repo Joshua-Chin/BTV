@@ -1,6 +1,8 @@
 use std::str::FromStr;
 
+
 bitflags! {
+    /// A set of challenge rewards.
     pub struct Rewards: u32 {
         const NONE = 0;
         const ADDITIONAL_ABILITY = 1 << 0;
@@ -15,6 +17,7 @@ bitflags! {
 }
 
 impl Rewards {
+    /// Iterate over the set of all possible reward configurations.
     pub fn combinations() -> impl Iterator<Item = Rewards> {
         (0..256).map(Rewards::from_bits_truncate)
     }
