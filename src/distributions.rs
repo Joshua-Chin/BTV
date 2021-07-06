@@ -3,43 +3,52 @@ use crate::rewards::Rewards;
 
 const TARGETS: usize = 71;
 
-// A distribution representing the sum of multiple rolls.
+/// The distribution the sum of multiple ability rolls.
 #[derive(Clone, Debug)]
 pub struct Distribution {
-    // The complementary cumulative distribution
+    // The complementary cumulative distribution. `ccdf[target]` is the probability that
+    // the outcome of the rolls is less than or equal to `target`.
     ccdf: [f32; TARGETS],
 }
 
 impl Distribution {
+    /// Returns a new distribution with no ability rolls.
     pub fn new() -> Distribution {
         let mut ccdf = [0.0; TARGETS];
         ccdf[0] = 1.0;
         Distribution { ccdf }
     }
 
+    /// Returns the probability that outcome is at least `target`.
     pub fn at_least(&self, target: usize) -> f32 {
         self.ccdf[target]
     }
 
+    /// Returns a distribution equal to the sum of this distribution and the given ability roll.
     pub fn add_ability(&self, ability: Ability, rewards: Rewards) -> Distribution {
         match ability {
             Ability::Atmosphere => self.add_die(
-                ability.cost() + (rewards.contains(Rewards::ATMOSPHERE_RANGE) as u32), 
-                false),
+                ability.cost() + (rewards.contains(Rewards::ATMOSPHERE_RANGE) as u32),
+                false,
+            ),
             Ability::Diction => self.add_die(
-                ability.cost() + (rewards.contains(Rewards::DICTION_RANGE) as u32), 
-                rewards.contains(Rewards::DICTION_STRENGTH)),
+                ability.cost() + (rewards.contains(Rewards::DICTION_RANGE) as u32),
+                rewards.contains(Rewards::DICTION_STRENGTH),
+            ),
             Ability::Precision => self.add_die(
-                ability.cost() + (rewards.contains(Rewards::PRECISION_RANGE) as u32), 
-                rewards.contains(Rewards::PRECISION_STRENGTH)),
-            Ability::Calmness => self.add_die(
-                ability.cost(),
-                rewards.contains(Rewards::CALMNESS_STRENGTH)),
-            Ability::Style => if rewards.contains(Rewards::STYLE_EXPLODING) {
+                ability.cost() + (rewards.contains(Rewards::PRECISION_RANGE) as u32),
+                rewards.contains(Rewards::PRECISION_STRENGTH),
+            ),
+            Ability::Calmness => {
+                self.add_die(ability.cost(), rewards.contains(Rewards::CALMNESS_STRENGTH))
+            }
+            Ability::Style => {
+                if rewards.contains(Rewards::STYLE_EXPLODING) {
                     self.add_exploding_style()
                 } else {
                     self.add_die(ability.cost(), false)
-                },
+                }
+            }
             _ => self.add_die(ability.cost(), false),
         }
     }
@@ -48,19 +57,32 @@ impl Distribution {
         let mut output = Distribution::new();
         let mut window = range as f32;
         let range_us = range as usize;
-        
+
         if strength {
             for i in 1..TARGETS {
                 output.ccdf[i] = window / (range as f32);
                 window += self.ccdf[i - 1];
-                window += if i + 1 >= range_us { self.ccdf[i + 1 - range_us] } else { 1.0 };
-                window -= 2.0 * if i >= range_us { self.ccdf[i - range_us] } else { 1.0 };
+                window += if i + 1 >= range_us {
+                    self.ccdf[i + 1 - range_us]
+                } else {
+                    1.0
+                };
+                window -= 2.0
+                    * if i >= range_us {
+                        self.ccdf[i - range_us]
+                    } else {
+                        1.0
+                    };
             }
         } else {
             for i in 1..TARGETS {
                 output.ccdf[i] = window / (range as f32);
                 window += self.ccdf[i];
-                window -= if i >= range_us { self.ccdf[i - range_us] } else { 1.0 };
+                window -= if i >= range_us {
+                    self.ccdf[i - range_us]
+                } else {
+                    1.0
+                };
             }
         }
 
