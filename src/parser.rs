@@ -1,4 +1,4 @@
-use crate::{challenges::Challenge, rewards::Rewards, challenges::TARGETS};
+use crate::{challenges::Challenge, rewards::Rewards, challenges::TARGET_SET};
 
 /// Parses a string containing multiple challenges.
 pub fn parse<T: AsRef<str>>(text: T) -> Option<Vec<Challenge>> {
@@ -11,7 +11,7 @@ pub fn parse<T: AsRef<str>>(text: T) -> Option<Vec<Challenge>> {
         let name = l1.next()?.trim().to_string();
         // Parse target
         let target: usize = l1.next()?.trim().strip_prefix("Target: ")?.parse().ok()?;
-        let target_idx = TARGETS.iter().position(|t| *t == target)?;
+        let target_idx = TARGET_SET.iter().position(|t| *t == target)?;
         // Parse abilities
         let abilities: u32 = l1
             .next()?

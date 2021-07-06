@@ -1,6 +1,3 @@
-use challenges::Challenge;
-use rewards::Rewards;
-
 #[macro_use]
 extern crate bitflags;
 

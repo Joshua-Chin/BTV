@@ -4,7 +4,7 @@ use crate::{
     abilities::{Ability, Abilities},
     challenges::Challenge,
     challenges::MAX_ABILITIES,
-    challenges::TARGETS,
+    challenges::TARGET_SET,
     distributions::Distribution,
     rewards::Rewards,
 };
@@ -28,7 +28,7 @@ struct Solution {
     abilities: Abilities,
 }
 
-type Solutions = [[[Solution; TARGETS.len()]; MAX_ABILITIES + 1]; COSTS];
+type Solutions = [[[Solution; TARGET_SET.len()]; MAX_ABILITIES + 1]; COSTS];
 
 pub struct ConvexHulls {
     cache: HashMap<Rewards, Vec<ConvexHull>>,
@@ -58,7 +58,7 @@ fn convex_hulls(
     }
 
     // Compute the optimal ability set for each target given a fixed cost and abilities
-    let mut solutions = [[[Default::default(); TARGETS.len()]; MAX_ABILITIES + 1]; COSTS];
+    let mut solutions = [[[Default::default(); TARGET_SET.len()]; MAX_ABILITIES + 1]; COSTS];
     search(
         rewards & !Rewards::ADDITIONAL_ABILITY,
         0,
@@ -71,7 +71,7 @@ fn convex_hulls(
 
     // Sweep over abilities used
     for cost in 0..COSTS {
-        for target in 0..TARGETS.len() {
+        for target in 0..TARGET_SET.len() {
             let mut best = solutions[cost][0][target];
             for abilities in 1..MAX_ABILITIES + 1 {
                 let value = &mut solutions[cost][abilities][target];
@@ -116,7 +116,7 @@ fn search(
         return;
     }
 
-    for (idx, target) in TARGETS.iter().enumerate() {
+    for (idx, target) in TARGET_SET.iter().enumerate() {
         let entry = &mut solutions[cost / 2][total_abilities][idx];
         if distribution.at_least(*target) >= entry.proba {
             *entry = Solution {
