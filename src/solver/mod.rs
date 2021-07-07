@@ -1,4 +1,4 @@
-pub mod convex_hulls;
+pub mod challenge_solver;
 
 /* 
 

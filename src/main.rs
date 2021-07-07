@@ -10,7 +10,7 @@ mod solver;
 
 fn main() {
     let challenges = parser::parse(include_str!("test_input.txt")).unwrap();
-    let solver = solver::convex_hulls::ConvexHulls::new(&challenges);
-    let h1 = solver.get(rewards::Rewards::NONE, 0);
+    let solver = solver::challenge_solver::ChallengeSolver::new(&challenges);
+    let h1 = solver.solution_to(rewards::Rewards::NONE, 0);
     println!("{:?}", h1);
 }
