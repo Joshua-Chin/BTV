@@ -240,7 +240,7 @@ mod tests {
 
     fn solve(challenges: &Vec<Challenge>, rewards: Rewards, idx: usize) -> ConvexHull {
         let mut output = HashMap::new();
-        solve(rewards, challenges, &mut output);
+        super::solve(rewards, challenges, &mut output);
         output.remove(&rewards).unwrap().swap_remove(idx)
     }
 
