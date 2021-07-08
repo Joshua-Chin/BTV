@@ -177,14 +177,14 @@ fn ability_cummax(table: &mut SearchTable) {
 
 /// Ability configuration of a challenge on the convex hull.
 #[derive(Debug)]
-pub struct Solution {
+pub struct Vertex {
     /// The cost of the ability configuration.
     pub cost: u32,
 
     /// The log probability of passing the challenge.
     pub log_proba: f32,
 
-    /// The (log probability / cost) slope with respect to the previous solution on the conex hull.
+    /// The (log probability / cost) slope with respect to the previous vertex on the convex hull.
     pub slope: f32,
 
     /// The ability configuration.
@@ -192,7 +192,7 @@ pub struct Solution {
 }
 
 /// A convex hull over challenge solutions.
-pub type ConvexHull = Vec<Solution>;
+pub type ConvexHull = Vec<Vertex>;
 
 /// Returns the convex hull over an array of challenge solutions.
 fn convex_hull<T: AsRef<[SearchEntry]>>(curve: T) -> ConvexHull {
@@ -216,7 +216,7 @@ fn convex_hull<T: AsRef<[SearchEntry]>>(curve: T) -> ConvexHull {
             hull.pop();
         }
 
-        hull.push(Solution {
+        hull.push(Vertex {
             cost: cost as u32,
             log_proba,
             slope,
