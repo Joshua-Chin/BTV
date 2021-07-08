@@ -7,11 +7,9 @@ use crate::{
     rewards::Rewards,
 };
 
-const EPSILON: f32 = 1e-6;
-
 /// Calculates and caches the optimal ability configurations of a set of challenges.
 pub struct ChallengeSolver {
-    cache: HashMap<Rewards, Vec<ConvexHull>>,
+    cache: HashMap<Rewards, Vec<ChallengeConvexHull>>,
 }
 
 impl ChallengeSolver {
@@ -29,7 +27,7 @@ impl ChallengeSolver {
     /// # Arguments
     /// - *rewards*: The rewards available while attempting the challenge.
     /// - *challenge_idx*: The index of the challenge.
-    pub fn solution_to(&self, rewards: Rewards, challenge_idx: usize) -> &ConvexHull {
+    pub fn solution_to(&self, rewards: Rewards, challenge_idx: usize) -> &ChallengeConvexHull {
         &self.cache[&rewards][challenge_idx]
     }
 }
@@ -41,7 +39,7 @@ impl ChallengeSolver {
 fn solve(
     rewards: Rewards,
     challenges: &Vec<Challenge>,
-    output: &mut HashMap<Rewards, Vec<ConvexHull>>,
+    output: &mut HashMap<Rewards, Vec<ChallengeConvexHull>>,
 ) {
     // Bail early if this rewards has already been calculated.
     if output.contains_key(&rewards) {
@@ -177,7 +175,7 @@ fn ability_cummax(table: &mut SearchTable) {
 
 /// Ability configuration of a challenge on the convex hull.
 #[derive(Debug)]
-pub struct Vertex {
+pub struct ChallengeVertex {
     /// The cost of the ability configuration.
     pub cost: u32,
 
@@ -192,15 +190,17 @@ pub struct Vertex {
 }
 
 /// A convex hull over challenge solutions.
-pub type ConvexHull = Vec<Vertex>;
+pub type ChallengeConvexHull = Vec<ChallengeVertex>;
+
+const MIN_PROBA: f32 = 0.1;
 
 /// Returns the convex hull over an array of challenge solutions.
-fn convex_hull<T: AsRef<[SearchEntry]>>(curve: T) -> ConvexHull {
-    let mut hull: ConvexHull = vec![];
+fn convex_hull<T: AsRef<[SearchEntry]>>(curve: T) -> ChallengeConvexHull {
+    let mut hull: ChallengeConvexHull = vec![];
 
     for (idx, solution) in curve.as_ref().iter().enumerate() {
         // Ignore values within epsilon of 0
-        if solution.proba <= EPSILON {
+        if solution.proba <= MIN_PROBA {
             continue;
         }
 
@@ -216,7 +216,7 @@ fn convex_hull<T: AsRef<[SearchEntry]>>(curve: T) -> ConvexHull {
             hull.pop();
         }
 
-        hull.push(Vertex {
+        hull.push(ChallengeVertex {
             cost: cost as u32,
             log_proba,
             slope,
@@ -238,7 +238,9 @@ fn convex_hull<T: AsRef<[SearchEntry]>>(curve: T) -> ConvexHull {
 mod tests {
     use super::*;
 
-    fn solve(challenges: &Vec<Challenge>, rewards: Rewards, idx: usize) -> ConvexHull {
+    const EPSILON: f32 = 1e-6;
+
+    fn solve(challenges: &Vec<Challenge>, rewards: Rewards, idx: usize) -> ChallengeConvexHull {
         let mut output = HashMap::new();
         super::solve(rewards, challenges, &mut output);
         output.remove(&rewards).unwrap().swap_remove(idx)
@@ -253,9 +255,9 @@ mod tests {
             reward: Rewards::NONE,
         }];
         let solution = solve(&challenges, Rewards::NONE, 0);
-        assert_eq!(solution.len(), 26);
-        assert_eq!(solution[0].cost, 36);
-        assert!((solution[0].log_proba + 4.0943) < EPSILON);
+        assert_eq!(solution.len(), 23);
+        assert_eq!(solution[0].cost, 42);
+        assert!((solution[0].log_proba - -2.14398).abs() < EPSILON);
     }
 
     #[test]
@@ -267,7 +269,7 @@ mod tests {
             reward: Rewards::NONE,
         }];
         let solution = solve(&challenges, Rewards::STYLE_EXPLODING, 0);
-        assert_eq!(solution[0].cost, 20);
-        assert!((solution[0].log_proba + -3.5935) < EPSILON);
+        assert_eq!(solution[0].cost, 40);
+        assert!((solution[0].log_proba - -1.90717).abs() < EPSILON);
     }
 }
