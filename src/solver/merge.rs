@@ -53,7 +53,8 @@ pub fn merge_hulls<T: AsRef<ChallengeConvexHull> + Sized>(hulls: &Vec<T>) -> Cha
         }
         match hull.as_ref().get(1) {
             Some(point) => {
-                heap.push((OrdF32(point.slope), point.cost, idx, 1));
+                let prev_cost = hull.as_ref()[0].cost;
+                heap.push((OrdF32(point.slope), point.cost - prev_cost, idx, 1));
             }
             None => {}
         }
@@ -67,21 +68,25 @@ pub fn merge_hulls<T: AsRef<ChallengeConvexHull> + Sized>(hulls: &Vec<T>) -> Cha
     });
 
     while let Some((_slope, marginal_cost, hull, idx)) = heap.pop() {
+        // Update tracking variables.
         let h = hulls[hull].as_ref();
         cost += marginal_cost;
         log_proba += h[idx].log_proba - h[idx - 1].log_proba;
         configuration[hull as usize] = hulls[hull as usize].as_ref()[idx].abilities;
+        // Check for early exit.
+        if cost > MAX_TOTAL_COST {
+            break;
+        }
+        // Push the next point of the hull onto the heap
         if let Some(point) = h.get(idx + 1) {
             heap.push((OrdF32(point.slope), point.cost - h[idx].cost, hull, idx + 1));
         }
+        // Add the vertex to the output.
         output.push(ChallengesVertex {
             cost,
             log_proba,
             configuration: configuration.clone(),
         });
-        if cost > MAX_TOTAL_COST {
-            break;
-        }
     }
 
     output
@@ -120,5 +125,9 @@ mod tests {
         assert_eq!(merged_hull.len(), 3);
         assert_eq!(merged_hull[0].cost, 6);
         assert_eq!(merged_hull[0].log_proba, -3.0);
+        assert_eq!(merged_hull[1].cost, 7);
+        assert_eq!(merged_hull[1].log_proba, -2.5);
+        assert_eq!(merged_hull[2].cost, 11);
+        assert_eq!(merged_hull[2].log_proba, -1.5);
     }
 }
