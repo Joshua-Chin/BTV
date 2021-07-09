@@ -19,7 +19,7 @@ impl ChallengeSolver {
         for rewards in Rewards::combinations() {
             solve(rewards, challenges, &mut cache);
         }
-        ChallengeSolver { cache: HashMap::new() }
+        ChallengeSolver { cache }
     }
 
     /// Returns the convex hull over the optimal ability configurations.
@@ -248,12 +248,14 @@ mod tests {
 
     #[test]
     fn test_solve_no_rewards() {
-        let challenges = vec![Challenge {
-            name: "challenge".to_string(),
-            abilities: 4,
-            target_idx: 5,
-            reward: Rewards::NONE,
-        }];
+        let challenges = vec![
+            Challenge {
+                name: "challenge".to_string(),
+                abilities: 4,
+                target_idx: 5,
+                reward: Rewards::NONE,
+            },
+        ];
         let solution = solve(&challenges, Rewards::NONE, 0);
         assert_eq!(solution.len(), 23);
         assert_eq!(solution[0].cost, 42);
@@ -262,14 +264,30 @@ mod tests {
 
     #[test]
     fn test_solve_exploding_style() {
-        let challenges = vec![Challenge {
-            name: "challenge".to_string(),
-            abilities: 4,
-            target_idx: 5,
-            reward: Rewards::NONE,
-        }];
+        let challenges = vec![
+            Challenge {
+                name: "challenge".to_string(),
+                abilities: 4,
+                target_idx: 5,
+                reward: Rewards::NONE,
+            }
+        ];
         let solution = solve(&challenges, Rewards::STYLE_EXPLODING, 0);
         assert_eq!(solution[0].cost, 40);
         assert!((solution[0].log_proba - -1.90717).abs() < EPSILON);
+    }
+
+    #[test]
+    fn test_debug() {
+        let challenges = vec![
+            Challenge {
+                name: "challenge".to_string(),
+                abilities: 15,
+                target_idx: 8,
+                reward: Rewards::NONE,
+            },
+        ];
+        let solution = solve(&challenges, Rewards::ADDITIONAL_ABILITY, 0);
+        println!("{:#?}", solution);
     }
 }
