@@ -115,6 +115,7 @@ mod tests {
             vec![
                 ChallengeVertex{cost: 5, log_proba: -1.0, slope: 0.0, abilities: Abilities::new()},
                 ChallengeVertex{cost: 6, log_proba: -0.5, slope: 0.5, abilities: Abilities::new()},
+                ChallengeVertex{cost: 10, log_proba: 0.0, slope: 0.125, abilities: Abilities::new()},
             ],
             vec![
                 ChallengeVertex{cost: 1, log_proba: -2.0, slope: 0.0, abilities: Abilities::new()},
@@ -122,12 +123,14 @@ mod tests {
             ],
         ];
         let merged_hull = merge_hulls(&hulls);
-        assert_eq!(merged_hull.len(), 3);
+        assert_eq!(merged_hull.len(), 4);
         assert_eq!(merged_hull[0].cost, 6);
         assert_eq!(merged_hull[0].log_proba, -3.0);
         assert_eq!(merged_hull[1].cost, 7);
         assert_eq!(merged_hull[1].log_proba, -2.5);
         assert_eq!(merged_hull[2].cost, 11);
         assert_eq!(merged_hull[2].log_proba, -1.5);
+        assert_eq!(merged_hull[3].cost, 15);
+        assert_eq!(merged_hull[3].log_proba, -1.0);
     }
 }

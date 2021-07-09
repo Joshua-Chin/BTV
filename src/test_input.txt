@@ -1,22 +1,22 @@
- Monologue  	  Target: 70  	  Max Abilities: 15
+  Monologue  	  Target: 30  	  Max Abilities: 4
 Reward: +1 Diction Range
-  Partyhouse Rage  	  Target: 30  	  Max Abilities: 3
-Reward: +1 Precision Range
-  Paperwork Montage  	  Target: 35  	  Max Abilities: 5
-Reward: +11% chance to get back lowest Ability used in attempt
-  Eating TACOs  	  Target: 20  	  Max Abilities: 2
-Reward: +10 per die rolled on Finale
-  Hating on Fighto  	  Target: 35  	  Max Abilities: 3
-Reward: +1 Ability max per challenge
-  Reading Wordy Instructions  	  Target: 25  	  Max Abilities: 4
-Reward: +1 Style Attempt on Style roll of 19 or 20
-  Creating Quickteams  	  Target: 45  	  Max Abilities: 10
+  Partyhouse Rage  	  Target: 20  	  Max Abilities: 10
 Reward: +1 Atmosphere Range
-  Zombja Sweeping  	  Target: 30  	  Max Abilities: 4
-Reward: +1 Calmness Strength
-  Marketplace Manipulating  	  Target: 10  	  Max Abilities: 4
+  Paperwork Montage  	  Target: 70  	  Max Abilities: 5
 Reward: +1 Diction Strength
-  Acting in BillyLive  	  Target: 11  	  Max Abilities: 3
+  Eating TACOs  	  Target: 40  	  Max Abilities: 4
 Reward: One additional Attempt of your most powerful type in Finale
-  Beating up WorldKaiju  	  Target: 40  	  Max Abilities: 8
+  Hating on Fighto  	  Target: 35  	  Max Abilities: 15
+Reward: +1 Style Attempt on Style roll of 19 or 20
+  Reading Wordy Instructions  	  Target: 45  	  Max Abilities: 15
+Reward: +1 Ability max per challenge
+  Creating Quickteams  	  Target: 10  	  Max Abilities: 8
+Reward: +1 Precision Range
+  Zombja Sweeping  	  Target: 35  	  Max Abilities: 3
+Reward: +1 Calmness Strength
+  Marketplace Manipulating  	  Target: 25  	  Max Abilities: 3
+Reward: +10 per die rolled on Finale
+  Acting in BillyLive  	  Target: 30  	  Max Abilities: 3
 Reward: +1 Precision Strength
+  Beating up WorldKaiju  	  Target: 11  	  Max Abilities: 5
+Reward: +11% chance to get back lowest Ability used in attempt

@@ -146,4 +146,13 @@ mod tests {
         assert!((dist.at_least(40) - 0.0025).abs() < 1e6);
         assert_eq!(dist.at_least(41), 0.0);
     }
+
+    #[test]
+    fn test_add_precision() {
+        let mut dist = Distribution::new();
+        for _ in 0..11 {
+            dist = dist.add_ability(Ability::Precision, Rewards::NONE);
+        }
+        println!("{}", dist.at_least(45));
+    }
 }

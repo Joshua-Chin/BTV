@@ -9,6 +9,7 @@ mod rewards;
 mod solver;
 
 fn main() {
+    println!("Parsing challenges");
     let challenges = parser::parse(include_str!("test_input.txt")).unwrap();
     let solutions = solver::solve(&challenges);
     for solution in solutions {
