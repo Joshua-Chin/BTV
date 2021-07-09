@@ -1,6 +1,7 @@
 use crate::abilities::Ability;
 use crate::rewards::Rewards;
 
+/// The number of distribution values to track. The target specified is at most 70.
 const TARGETS: usize = 71;
 
 /// The distribution the sum of multiple ability rolls.
