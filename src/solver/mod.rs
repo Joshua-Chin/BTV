@@ -55,7 +55,7 @@ pub fn solve(challenges: &Vec<Challenge>) -> Vec<SolutionVertex> {
             let idx = candidate.cost as usize / 2;
             if let Some(vertex) = &table[idx] {
                 if vertex.log_proba > candidate.log_proba {
-                    break;
+                    continue;
                 }
             }
             table[idx] = Some(SolutionVertex {
@@ -67,10 +67,14 @@ pub fn solve(challenges: &Vec<Challenge>) -> Vec<SolutionVertex> {
         }
     }
     // Gather the vertices from the table
-    let mut output = Vec::new();
+    let mut output: Vec<SolutionVertex> = Vec::new();
     for entry in table {
         match entry {
-            Some(vertex) => output.push(vertex),
+            Some(vertex) => {
+                if output.last().map_or(true, |v| vertex.log_proba > v.log_proba) {
+                    output.push(vertex);
+                }
+            },
             None => {},
         }
     }

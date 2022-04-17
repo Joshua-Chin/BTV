@@ -20,7 +20,7 @@ pub struct ChallengesVertex {
 type ChallengesConvexHull = Vec<ChallengesVertex>;
 
 /// The maximum cost to consider spending on the challenges.
-pub const MAX_TOTAL_COST: u32 = 1000;
+pub const MAX_TOTAL_COST: u32 = 1200;
 
 pub fn merge_hulls<T: AsRef<ChallengeConvexHull> + Sized>(hulls: &Vec<T>) -> ChallengesConvexHull {
     // Initialize running variables
