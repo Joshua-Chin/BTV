@@ -1,4 +1,4 @@
-use std::ops::{Index, IndexMut};
+use std::{ops::{Index, IndexMut}, fmt::{Debug, self}, ops::Add};
 
 /// Enumeration of available abilities.
 #[derive(Debug, Copy, Clone)]
@@ -44,7 +44,7 @@ impl Ability {
 }
 
 /// Efficient ability counter.
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Default)]
 pub struct Abilities {
     abilities: [u8; 8],
 }
@@ -80,6 +80,25 @@ impl IndexMut<Ability> for Abilities {
     fn index_mut(&mut self, index: Ability) -> &mut Self::Output {
         &mut self.abilities[Self::index_of(index)]
     }
+}
+
+impl Debug for Abilities {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.abilities.fmt(f)
+    }
+}
+
+impl Add<&Abilities> for Abilities {
+    type Output = Abilities;
+
+    fn add(self, rhs: &Abilities) -> Self::Output {
+        let mut output = Self::Output::new();
+        for ability in Ability::values() {
+            output[ability] = self[ability] + rhs[ability];
+        }
+        output
+    }
+    
 }
 
 #[cfg(test)]

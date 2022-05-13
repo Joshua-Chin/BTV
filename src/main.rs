@@ -8,9 +8,11 @@ mod parser;
 mod rewards;
 mod solver;
 
-use std::{fs::File, io::Read, path::Path};
+use std::{fs::File, io::Read, ops::Add, path::Path};
 
 use clap::{AppSettings, Clap};
+
+use crate::abilities::Abilities;
 
 #[derive(Clap)]
 #[clap(version="1.0", author="Joshua Chin")]
@@ -37,10 +39,18 @@ fn main() {
     let solutions = solver::solve(&challenges);
     
     for solution in solutions {
+        let proba = solution.log_proba.exp();
+        if proba < 0.1 {
+            continue;
+        }
         println!("Cost: {}", solution.cost);
-        println!("Success chance: {}", solution.log_proba.exp());
+        println!("Success chance: {}", proba);
         println!("Order: {:?}", solution.order);
-        println!("Abilities: {:?}", solution.abilities);
+        println!("Totals: {:?}", solution.abilities.iter().fold(Abilities::new(), Abilities::add));
+        println!("Abilities:");
+        for abilities in solution.abilities {
+            println!("{:?}", abilities);
+        }
         println!();
     }
 }
