@@ -44,12 +44,13 @@ mod tests {
         assert!(result.is_some());
         let challenges = result.unwrap();
         assert!(challenges.len() == 11);
+        println!("{:?}", challenges);
         assert_eq!(
             challenges[0],
             Challenge {
                 name: "Monologue".to_string(),
-                target_idx: 8,
-                abilities: 15,
+                target_idx: 4,
+                abilities: 4,
                 reward: Rewards::DICTION_RANGE
             }
         );

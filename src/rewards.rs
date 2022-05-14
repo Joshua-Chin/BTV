@@ -32,7 +32,7 @@ impl FromStr for Rewards {
             "+1 Atmosphere Range" => Rewards::ATMOSPHERE_RANGE,
             "+1 Diction Strength" => Rewards::DICTION_STRENGTH,
             "+1 Diction Range" => Rewards::DICTION_RANGE,
-            "+1 Precision Strength" => Rewards::DICTION_STRENGTH,
+            "+1 Precision Strength" => Rewards::PRECISION_STRENGTH,
             "+1 Precision Range" => Rewards::PRECISION_RANGE,
             "+1 Calmness Strength" => Rewards::CALMNESS_STRENGTH,
             "+1 Style Attempt on Style roll of 19 or 20" => Rewards::STYLE_EXPLODING,
